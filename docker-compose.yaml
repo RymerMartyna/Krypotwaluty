@@ -1,12 +1,68 @@
 services:
-  app:
+  backend:
+    container_name: backend
     build:
-      context: .
+      context: backend
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
     ports:
-      - 8000:8000
-    tty: true
+      - "8000:8000"
 
-  postgress:
-    image: bitnami/postgresql:12
+  frontend:
+    restart: always
+    command : npm start
+    container_name: frontend-server
+    build:
+      context: ./frontend-server/
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
     environment:
-      POSTGRES_PASSWORD: password
+      NODE_ENV: production
+    depends_on:
+      - backend
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.11-management-alpine
+    depends_on:
+      - backend
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_MQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_MQ_PASS}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  email-sender:
+    container_name: email-sender
+    build:
+      context: ./email-sender/
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_USER: ${RABBIT_MQ_USER}
+      RABBITMQ_PASS: ${RABBIT_MQ_PASS}
+
+  postgres:
+    image: postgres:15.1
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
