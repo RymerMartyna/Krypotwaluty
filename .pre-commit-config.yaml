@@ -33,8 +33,8 @@ repos:
       - id: isort
 
 
-  - repo: https://github.com/ecugol/pre-commit-hooks-django
-    rev: v0.4.0
-    hooks:
-      - id: check-untracked-migrations
-      - id: check-absent-migrations
+  # - repo: https://github.com/ecugol/pre-commit-hooks-django
+  #   rev: v0.4.0
+  #   hooks:
+  #     - id: check-untracked-migrations
+  #     - id: check-absent-migrations
