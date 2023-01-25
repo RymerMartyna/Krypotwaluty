@@ -17,3 +17,10 @@ CREATE TABLE price_history (
     price MONEY NOT NULL,
     date_of_price TIMESTAMP NOT NULL
 );
+
+CREATE TABLE predictions (
+    id serial PRIMARY KEY,
+    cryptocurrency VARCHAR ( 255 ) NOT NULL,
+    date_of_prediction TIMESTAMP NOT NULL,
+    prediction VARCHAR ( 255 ) NOT NULL
+);

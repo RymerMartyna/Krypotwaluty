@@ -1,3 +1,3 @@
 #!/bin/sh
 
-python main.py
+celery -A main worker -B -l info

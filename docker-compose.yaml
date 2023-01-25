@@ -46,6 +46,20 @@ services:
       RABBITMQ_USER: ${RABBIT_MQ_USER}
       RABBITMQ_PASS: ${RABBIT_MQ_PASS}
 
+  crypto-service:
+    container_name: crypto-service
+    build:
+      context: ./crypto-service/
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_USER: ${RABBIT_MQ_USER}
+      RABBITMQ_PASS: ${RABBIT_MQ_PASS}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DATABASE: ${DB_DATABASE}
+
   postgres:
     image: postgres:15.1
     environment:
