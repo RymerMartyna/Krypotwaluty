@@ -30,7 +30,7 @@ conn = psycopg2.connect(database = "default", user = pg_user, password = pg_pass
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(5.0, process_crypto.s(), name='process crypto after 5 seconds')
+    sender.add_periodic_task(60.0, process_crypto.s(), name='process crypto after 60 seconds')
 
 @app.task
 def process_crypto():
@@ -42,7 +42,8 @@ def process_crypto():
         ## save crypto to db
         write_price_to_db(crypto, price)
         ## send emails
-        for email in ['luthien.shadow@gmail.com']: #zmienic dla wszystkich uzytkownikow dla danej krypto
+        emails = select_from_db(crypto)
+        for email in emails:
             app.send_task("process_email.process_email", args=[email, crypto, price, currency], queue='email_queue')
 
 # # Get list of available choices
@@ -60,3 +61,25 @@ def write_price_to_db(currency, price):
 def get_price(coins, currencies):
     return cg.get_price(ids=coins, vs_currencies=currencies, precision="full")
 
+def select_from_db(cryptocurrency):
+    email_list = []
+    try:
+        cursor = conn.cursor()
+        postgreSQL_select_Query = f"select * from emails where cryptocurrency='{cryptocurrency}'"
+
+        cursor.execute(postgreSQL_select_Query)
+        # print("Selecting rows from email table using cursor.fetchall")
+        email_records = cursor.fetchall()
+
+        for row in email_records:
+            email_list.append(row[1])
+            
+        return email_list
+
+    except (Exception, psycopg2.Error) as error:
+        print("Error while fetching data from PostgreSQL", error)
+
+    finally:
+        # closing database connection.
+        if conn:
+            cursor.close()

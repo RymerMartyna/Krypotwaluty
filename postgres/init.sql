@@ -14,7 +14,7 @@ CREATE TABLE sending_status (
 CREATE TABLE price_history (
     id serial PRIMARY KEY,
     cryptocurrency VARCHAR ( 255 ) NOT NULL,
-    price MONEY NOT NULL,
+    price NUMERIC (12,2) NOT NULL,
     date_of_price TIMESTAMP NOT NULL
 );
 
@@ -24,3 +24,10 @@ CREATE TABLE predictions (
     date_of_prediction TIMESTAMP NOT NULL,
     prediction VARCHAR ( 255 ) NOT NULL
 );
+
+INSERT INTO emails (email, cryptocurrency, created_on)
+VALUES ('luthien.shadow@gmail.com', 'bitcoin', current_timestamp);
+INSERT INTO emails (email, cryptocurrency, created_on)
+VALUES ('xdeidara1@gmail.com', 'bitcoin', current_timestamp);
+
+
