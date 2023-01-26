@@ -1,6 +1,6 @@
 from django.urls import include, path
-from . import views
+from .views import CryptoPriceList
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('test/', CryptoPriceList.as_view()),
 ]
