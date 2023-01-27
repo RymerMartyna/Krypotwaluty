@@ -4,7 +4,6 @@ from datetime import datetime
 from pycoingecko import CoinGeckoAPI
 
 cg = CoinGeckoAPI()
-# print(cg.ping()) #confirm connection
 
 coins_list = cg.get_coins_list()
 
