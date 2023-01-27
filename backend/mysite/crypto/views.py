@@ -44,17 +44,17 @@ class EmailRegister(generics.ListAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     
-    class PredictionList(generics.ListAPIView):
+class PredictionList(generics.ListAPIView):
     # API endpoint that allows customer to be viewed.
     
-        serializer_class = PredictionSerializer
+    serializer_class = PredictionSerializer
 
     def get_queryset(self):
         if self.request.method == 'GET':
             minutes = int(self.request.GET.get('minutes', "3"))
             print(minutes)
       
-            queryset = Prediction.objects.filter(date_of_price__gte=datetime.datetime.now() - datetime.timedelta(minutes=minutes))
+            queryset = Prediction.objects.filter(date_of_prediction__gte=datetime.datetime.now() - datetime.timedelta(minutes=minutes))
             return queryset
         else:
             return 0
