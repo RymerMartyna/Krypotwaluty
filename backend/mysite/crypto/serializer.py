@@ -5,7 +5,7 @@ class CryptoPriceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CryptoPrice 
-        fields = ['cryptocurrency', 'price', 'date_of_price']
+        fields = ['id', 'cryptocurrency', 'price', 'date_of_price']
 
 class EmailSerializer(serializers.ModelSerializer):
 
@@ -17,4 +17,4 @@ class PredictionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Prediction
-        fields = ['cryptocurrency', 'date_of_prediction', 'prediction']
+        fields = ['id', 'cryptocurrency', 'date_of_prediction', 'prediction']

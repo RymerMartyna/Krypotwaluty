@@ -7,6 +7,9 @@ from rest_framework import status
 from .serializer import CryptoPriceSerializer, EmailSerializer, PredictionSerializer
 import datetime
 
+def index(request):
+    return render(request, "index.html")
+
 class CryptoPriceList(generics.ListAPIView):
     # API endpoint that allows customer to be viewed.
     

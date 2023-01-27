@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div style="margin:50px">
+    <div style="display: table;height: 50px;text-align: center;align-items:center">
+        <div style="display: table-cell;background-color:white;border: 1px solid rgba(0, 0, 0, 0.125);width: 200px;margin:20px">
+            <p style="padding:7px">Bitcoin</p>
+        </div>
+        <div style="display: table-cell;background-color:white;border: 1px solid rgba(0, 0, 0, 0.125);width: 200px;margin:20px">
+            <p style="padding:7px" id="data"></p>
+        </div>
+        <div style="display: table-cell;background-color:white;border: 1px solid rgba(0, 0, 0, 0.125);width: 200px;margin:20px">
+            <p style="padding:7px" id="cena"></p>
+        </div>
+    </div>
+    <div style="padding:20px"><p style="color:white">Wykres ceny</p></div>
+    <div style="width:600px">
+        <canvas id="lastWeek" style="background-color:white"></canvas>
+    </div>
+    <div style="padding:20px"><p style="color:white">Wykres prognozowany</p></div>
+    <div style="width:600px">
+        <canvas id="prognoza" style="background-color:white"></canvas>
+    </div>
+    <div style="background-color:white;border: 1px solid rgba(0, 0, 0, 0.125);width: 600px;margin-top:30px">
+        <p style="padding:7px">Chce otrzymywac alert o naglym spadku/wzroscie oraz informacje dotyczace prognozy kursu:</p>
+    </div>
+    <div style="display: table;background-color:white;border: 1px solid rgba(0, 0, 0, 0.125);width: 600px;margin-top:30px">
+        <p style="display: table-cell;padding:7px">Adres email</p>
+        <form method="POST" class="addItem" id="my-form-id">
+          <input type="email" id="email" name="email" required>
+          <button id="submitItem" type="submit" form="addItem" value="Submit" onclick="addingItems()">Zapisz mnie</button>
+      </form>
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const validateEmail = (email) => {
+  return String(email)
+    .toLowerCase()
+    .match(
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+};
+const host = "localhost"
+const port = "8000"
+
+const addingItems = (items) => {
+  var email = document.getElementById("email").value;
+  console.log(email)
+  if(validateEmail(email)) {
+    var formdata = new FormData();
+    formdata.append("email", email);
+    formdata.append("cryptocurrency", "bitcoin");
+
+    var requestOptions = {
+      method: 'POST',
+      body: formdata,
+      redirect: 'follow'
+    };
+
+    fetch(`http://${host}:${port}/email/`, requestOptions)
+      .then(response => {
+        console.log("Status: " + response.status)
+        if(response.status >= 200 && response.status < 300)
+        alert("Email " + email + " zostal zarejestrowany")
+        else alert("Email " + email + " nie moze zostac zarejestrowany, gdyz juz istnieje")
+      
+      })
+      .then(response => document.getElementById("email").value = '')
+      .catch(error => console.log('error', error));
+        
+      }
+  else{
+    alert("Niepoprawny adres email")
+    document.getElementById("email").value = '';
+  }
+}
+
+const convertArrayToObject = (array, key) => {
+  const initialValue = {};
+  return array.reduce((obj, item) => {
+    return {
+      ...obj,
+      [item[key]]: item,
+    };
+  }, initialValue);
+};
+
+const process = (records) => {
+  const biggestId = Math.max(...Object.keys(records))
+  console.log(biggestId)
+  console.log(records[biggestId])
+  document.getElementById("data").innerText = "Ostatnia zmiana: " + records[biggestId]["date_of_price"].replace('T', ' ').split('.')[0];
+  document.getElementById("cena").innerText = "Cena: " + records[biggestId]["price"] + "$";
+
+  const ctxOstTydzien = document.getElementById('lastWeek');
+  new Chart(ctxOstTydzien, {
+    type: 'line',
+    data: {
+      labels: Object.keys(records).map(x => records[x]["date_of_price"].replace('T', ' ').split('.')[0]),
+      datasets: [{
+        label:"Cena",
+        data: Object.keys(records).map(x => records[x]["price"]),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+const processPrediction = (records) => {
+
+  const ctxOstTydzien = document.getElementById('prognoza');
+  new Chart(ctxOstTydzien, {
+    type: 'line',
+    data: {
+      labels: Object.keys(records).map(x => records[x]["date_of_prediction"].replace('T', ' ').split('.')[0]),
+      datasets: [{
+        label:"Cena",
+        data: Object.keys(records).map(x => records[x]["prediction"]),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+var requestOptions = {
+  method: 'GET',
+  redirect: 'follow'
+};
+
+fetch(`http://${host}:${port}/price/?minutes=3600`, requestOptions)
+  .then(response => response.text())
+  .then(
+    response => JSON.parse(response)
+  ).then(response => convertArrayToObject(response, "id"))
+  .then(records => process(records))
+  .catch(error => console.log('error', error));
+
+fetch(`http://${host}:${port}/prediction/?minutes=3600`, requestOptions)
+  .then(response => response.text())
+  .then(
+    response => JSON.parse(response)
+  ).then(response => convertArrayToObject(response, "id"))
+  .then(records => processPrediction(records))
+  .catch(error => console.log('error', error));
+
+</script>
+{% endblock %}

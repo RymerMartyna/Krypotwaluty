@@ -7,7 +7,6 @@ from datetime import datetime
 import psycopg2
 from celery import Celery
 from pycoingecko import CoinGeckoAPI
-import time
 
 user = os.environ["RABBITMQ_USER"]
 password = os.environ["RABBITMQ_PASS"]
@@ -50,7 +49,7 @@ def initial_load():
             print("executed")
             conn.commit()
 
-
+        make_prediction(conn, coin)
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
@@ -66,6 +65,7 @@ def process_crypto():
         price = prices[crypto][currency]
         ## save crypto to db
         write_price_to_db(crypto, price)
+        make_prediction(conn, crypto)
         ## send emails
         emails = select_from_db(crypto)
         for email in emails:
@@ -88,24 +88,6 @@ def write_price_to_db(currency, price):
         f"INSERT INTO price_history (cryptocurrency, price, date_of_price) "
         f"VALUES ('{currency}', {price}, current_timestamp)"
     )
-    conn.commit()
-
-
-# Write predictions to predition table
-def write_price_to_forecast_db(currency, price, date):
-    print("write price to forecast db")
-    cur = conn.cursor()
-    cur.execute(
-        f"INSERT INTO predictions (cryptocurrency, price, date_of_price) "
-        f"VALUES ('{currency}', {price}, {date})"
-    )
-    conn.commit()
-
-
-# Clear predictions table
-def clear_predicitions_db():
-    cur = conn.cursor()
-    cur.execute(f"DELETE FROM predictions")
     conn.commit()
 
 
@@ -164,3 +146,42 @@ def select_historical_prices_from_db(cryptocurrency):
         # closing database connection.
         if conn:
             cursor.close()
+
+from prophet import Prophet
+import pandas.io.sql as psql
+
+
+def empty_table(connection):
+    cur = connection.cursor()
+    sql = f"truncate table predictions"
+    print(f"executing {sql}")
+    cur.execute(sql)
+    print("executed")
+    connection.commit()
+
+
+def insert_predictions(connection, forecast, coin):
+    cur = connection.cursor()
+    for index, row in forecast.iterrows():
+        sql = f"INSERT INTO predictions (date_of_prediction, prediction, cryptocurrency) VALUES ('{row['ds']}', " \
+              f"{row['yhat']}, '{coin}')"
+        print(f"executing {sql}")
+        cur.execute(sql)
+
+    connection.commit()
+
+
+def make_prediction(connection, coin):
+    df = psql.read_sql("select * from price_history", connection)
+    df = df.rename(columns={"price": "y", "date_of_price": "ds"})
+
+    # Creating forecast
+    pr = Prophet()
+    pr.fit(df)
+    future = pr.make_future_dataframe(periods=90)
+    forecast = pr.predict(future)
+
+    forecast = forecast[["ds", "yhat"]]
+
+    empty_table(connection)
+    insert_predictions(connection, forecast, coin)

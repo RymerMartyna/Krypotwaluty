@@ -8,6 +8,7 @@ class CryptoPrice(models.Model):
     cryptocurrency = models.CharField("cryptocurrency", max_length=240, db_column='cryptocurrency')
     price = models.FloatField(db_column="price")
     date_of_price = models.DateTimeField(db_column="date_of_price")
+    id = models.IntegerField(db_column="id", primary_key=True)
 
     def __str__(self):
         return self.cryptocurrency
@@ -30,6 +31,7 @@ class Prediction(models.Model):
     cryptocurrency = models.CharField("cryptocurrency", max_length=255, db_column='cryptocurrency')
     date_of_prediction = models.DateTimeField("date_of_prediction", db_column='date_of_prediction')
     prediction = models.CharField("prediction", max_length=255, db_column='prediction')
+    id = models.IntegerField(db_column="id", primary_key=True)
     def __str__(self):
         return self.prediction
 

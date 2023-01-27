@@ -9,20 +9,6 @@ services:
     ports:
       - "8000:8000"
 
-  frontend:
-    restart: always
-    command : npm start
-    container_name: frontend-server
-    build:
-      context: ./frontend-server/
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: production
-    depends_on:
-      - backend
-
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.11-management-alpine

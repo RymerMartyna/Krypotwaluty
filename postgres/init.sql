@@ -22,12 +22,6 @@ CREATE TABLE predictions (
     id serial PRIMARY KEY,
     cryptocurrency VARCHAR ( 255 ) NOT NULL,
     date_of_prediction TIMESTAMP NOT NULL,
-    prediction VARCHAR ( 255 ) NOT NULL
+    prediction NUMERIC (12,6) NOT NULL
 );
-
-INSERT INTO emails (email, cryptocurrency, created_on)
-VALUES ('luthien.shadow@gmail.com', 'bitcoin', current_timestamp);
-INSERT INTO emails (email, cryptocurrency, created_on)
-VALUES ('xdeidara1@gmail.com', 'bitcoin', current_timestamp);
-
 

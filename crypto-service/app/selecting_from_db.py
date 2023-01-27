@@ -10,7 +10,7 @@ import os
 pg_user = "admin"
 pg_password = "password"
 pg_database = "default"
-pg_host = "localhost"
+pg_host = "postgres"
 
 #lista pythonowa, do ktorej beda dodane maile: 
 

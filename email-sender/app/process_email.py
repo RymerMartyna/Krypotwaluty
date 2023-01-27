@@ -18,7 +18,7 @@ app = Celery('email', broker=CELERY_BROKER_URL)
 port = 465  # For SSL
 smtp_server = "smtp.gmail.com"
 sender_email = "aplikacjakryptowalutytest@gmail.com"
-password = ""
+password = "llfjfuahshnqjmvo"
 
 
 def setup_smpt():
