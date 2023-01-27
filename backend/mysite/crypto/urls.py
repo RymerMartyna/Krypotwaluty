@@ -1,6 +1,7 @@
 from django.urls import include, path
-from . import views
+from .views import CryptoPriceList, EmailRegister
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('price/', CryptoPriceList.as_view()),
+    path('email/', EmailRegister.as_view()),
 ]

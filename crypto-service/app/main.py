@@ -7,6 +7,7 @@ from datetime import datetime
 import psycopg2
 from celery import Celery
 from pycoingecko import CoinGeckoAPI
+import time
 
 user = os.environ["RABBITMQ_USER"]
 password = os.environ["RABBITMQ_PASS"]
@@ -25,18 +26,36 @@ cg = CoinGeckoAPI()
 coins_list = ["bitcoin"]
 
 currency = "usd"
-
 conn = psycopg2.connect(
     database="default", user=pg_user, password=pg_password, host=pg_host, port="5432"
 )
+days = 2
+
+
+
+def initial_load():
+    print("Executing initial load")
+    for coin in coins_list:
+        history = cg.get_coin_market_chart_by_id(coin, vs_currency=currency, days=2)["prices"]
+
+        output = []
+        for entry in history:
+            date = datetime.fromtimestamp(entry[0]/1000.0)
+            output.append({"date_time": date, "price": entry[1]})
+
+            cur = conn.cursor()
+            sql = f"INSERT INTO price_history (cryptocurrency, price, date_of_price) VALUES ('{coin}', {entry[1]}, '{date}')"
+            print(f"executing {sql}")
+            cur.execute(sql)
+            print("executed")
+            conn.commit()
+
 
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(
-        60.0, process_crypto.s(), name="process crypto after 60 seconds"
-    )
-
+    sender.add_periodic_task(60.0, process_crypto.s(), name='process crypto after 60 seconds')
+    initial_load()
 
 @app.task
 def process_crypto():
