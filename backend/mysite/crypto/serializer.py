@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CryptoPrice, Email
+from .models import CryptoPrice, Email, Prediction
 
 class CryptoPriceSerializer(serializers.ModelSerializer):
 
@@ -12,3 +12,9 @@ class EmailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Email
         fields = ['email', 'cryptocurrency', 'created_on']
+        
+class PredictionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Prediction
+        fields = ['cryptocurrency', 'date_of_prediction', 'prediction']

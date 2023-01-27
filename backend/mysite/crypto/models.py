@@ -17,7 +17,7 @@ class CryptoPrice(models.Model):
 
 class Email(models.Model):
     email = models.CharField("email", max_length=240, db_column='email')
-    cryptocurrency = models.CharField("email", max_length=240, db_column='cryptocurrency')
+    cryptocurrency = models.CharField("cryptocurrency", max_length=240, db_column='cryptocurrency')
     created_on = models.DateTimeField(db_column="created_on", default=datetime.now())
 
     def __str__(self):
@@ -25,3 +25,17 @@ class Email(models.Model):
 
     class Meta:
         db_table = "emails"
+
+class Prediction(models.Model):
+    cryptocurrency = models.CharField("cryptocurrency", max_length=255, db_column='cryptocurrency')
+    date_of_prediction = models.CharField("date_of_prediction", db_column='date_of_prediction')
+    prediction = models.CharField("prediction", max_length=255, db_column='prediction')
+    def __str__(self):
+        return self.prediction
+
+    class Meta:
+        db_table = "predictions"
+    
+    
+    
+    
