@@ -2,14 +2,15 @@
 # import plotly.graph_objects as go
 # from plotly.ofline import plot
 import os
-from pycoingecko import CoinGeckoAPI
-from celery import Celery
 from datetime import datetime
+
 import psycopg2
+from celery import Celery
+from pycoingecko import CoinGeckoAPI
 
 user = os.environ["RABBITMQ_USER"]
 password = os.environ["RABBITMQ_PASS"]
-CELERY_BROKER_URL=f"amqp://{user}:{password}@rabbitmq:5672/"
+CELERY_BROKER_URL = f"amqp://{user}:{password}@rabbitmq:5672/"
 
 pg_user = os.environ["POSTGRES_USER"]
 pg_password = os.environ["POSTGRES_PASSWORD"]
@@ -19,18 +20,23 @@ pg_host = "postgres"
 # password = 'password'
 # CELERY_BROKER_URL=f"amqp://{user}:{password}@localhost:5672/"
 
-app = Celery('crypto', broker=CELERY_BROKER_URL)
+app = Celery("crypto", broker=CELERY_BROKER_URL)
 cg = CoinGeckoAPI()
-coins_list = ['bitcoin']
+coins_list = ["bitcoin"]
 
-currency = 'usd'
+currency = "usd"
 
-conn = psycopg2.connect(database = "default", user = pg_user, password = pg_password,
-                        host = pg_host, port = "5432")
+conn = psycopg2.connect(
+    database="default", user=pg_user, password=pg_password, host=pg_host, port="5432"
+)
+
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(60.0, process_crypto.s(), name='process crypto after 60 seconds')
+    sender.add_periodic_task(
+        60.0, process_crypto.s(), name="process crypto after 60 seconds"
+    )
+
 
 @app.task
 def process_crypto():
@@ -44,28 +50,58 @@ def process_crypto():
         ## send emails
         emails = select_from_db(crypto)
         for email in emails:
-            app.send_task("process_email.process_email", args=[email, crypto, price, currency], queue='email_queue')
+            app.send_task(
+                "process_email.process_email",
+                args=[email, crypto, price, currency],
+                queue="email_queue",
+            )
+
 
 # # Get list of available choices
 # def get_names():
 #     return [x["name"] for x in coins_list]
 
+
 def write_price_to_db(currency, price):
     print("write price to db")
     cur = conn.cursor()
-    cur.execute(f"INSERT INTO price_history (cryptocurrency, price, date_of_price) "
-                f"VALUES ('{currency}', {price}, current_timestamp)")
+    cur.execute(
+        f"INSERT INTO price_history (cryptocurrency, price, date_of_price) "
+        f"VALUES ('{currency}', {price}, current_timestamp)"
+    )
     conn.commit()
+
+
+# Write predictions to predition table
+def write_price_to_forecast_db(currency, price, date):
+    print("write price to forecast db")
+    cur = conn.cursor()
+    cur.execute(
+        f"INSERT INTO predictions (cryptocurrency, price, date_of_price) "
+        f"VALUES ('{currency}', {price}, {date})"
+    )
+    conn.commit()
+
+
+# Clear predictions table
+def clear_predicitions_db():
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM predictions")
+    conn.commit()
+
 
 # Get price of the chosen coin in the chosen currency
 def get_price(coins, currencies):
     return cg.get_price(ids=coins, vs_currencies=currencies, precision="full")
 
+
 def select_from_db(cryptocurrency):
     email_list = []
     try:
         cursor = conn.cursor()
-        postgreSQL_select_Query = f"select * from emails where cryptocurrency='{cryptocurrency}'"
+        postgreSQL_select_Query = (
+            f"select * from emails where cryptocurrency='{cryptocurrency}'"
+        )
 
         cursor.execute(postgreSQL_select_Query)
         # print("Selecting rows from email table using cursor.fetchall")
@@ -73,8 +109,34 @@ def select_from_db(cryptocurrency):
 
         for row in email_records:
             email_list.append(row[1])
-            
+
         return email_list
+
+    except (Exception, psycopg2.Error) as error:
+        print("Error while fetching data from PostgreSQL", error)
+
+    finally:
+        # closing database connection.
+        if conn:
+            cursor.close()
+
+
+def select_historical_prices_from_db(cryptocurrency):
+    historical_list = []
+    try:
+        cursor = conn.cursor()
+        postgreSQL_select_Query = (
+            f"SELECT * from price_history where cryptocurrency='{cryptocurrency}'"
+        )
+
+        cursor.execute(postgreSQL_select_Query)
+        # print("Selecting rows from price_history table using cursor.fetchall")
+        historical_records = cursor.fetchall()
+
+        for row in historical_records:
+            historical_list.append(row[1])
+
+        return historical_list
 
     except (Exception, psycopg2.Error) as error:
         print("Error while fetching data from PostgreSQL", error)
