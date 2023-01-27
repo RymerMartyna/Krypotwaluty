@@ -14,7 +14,7 @@ CREATE TABLE sending_status (
 CREATE TABLE price_history (
     id serial PRIMARY KEY,
     cryptocurrency VARCHAR ( 255 ) NOT NULL,
-    price NUMERIC (12,2) NOT NULL,
+    price NUMERIC (12,6) NOT NULL,
     date_of_price TIMESTAMP NOT NULL
 );
 
