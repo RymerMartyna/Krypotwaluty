@@ -28,7 +28,7 @@ class Email(models.Model):
 
 class Prediction(models.Model):
     cryptocurrency = models.CharField("cryptocurrency", max_length=255, db_column='cryptocurrency')
-    date_of_prediction = models.CharField("date_of_prediction", db_column='date_of_prediction')
+    date_of_prediction = models.DateTimeField("date_of_prediction", db_column='date_of_prediction')
     prediction = models.CharField("prediction", max_length=255, db_column='prediction')
     def __str__(self):
         return self.prediction
