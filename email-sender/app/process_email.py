@@ -11,15 +11,14 @@ import time
 user = 'user'
 password = 'password'
 
-CELERY_BROKER_URL=f"amqp://{user}:{password}@rabbitmq:5672/"
+CELERY_BROKER_URL = f"amqp://{user}:{password}@rabbitmq:5672/"
 
 app = Celery('email', broker=CELERY_BROKER_URL)
 
 port = 465  # For SSL
 smtp_server = "smtp.gmail.com"
 sender_email = "aplikacjakryptowalutytest@gmail.com"
-password = "ogveyhrbpebkxwhz"
-
+password = ""
 
 
 def setup_smpt():
@@ -30,14 +29,16 @@ def setup_smpt():
     s.login(sender_email, password)
     print("email")
     return s
-    
+
+
 def close_server(s):
     s.quit()
+
 
 @app.task
 def process_email(email, crypto, price, currency):
     s = setup_smpt()
-    
+
     def send_email():
         # s = get_server()
         message = f"""\
@@ -45,6 +46,6 @@ def process_email(email, crypto, price, currency):
 
     Hello {email}. Price for {crypto} is {price} {currency}"""
         s.sendmail(sender_email, email, message)
-    
+
     send_email()
     # close_server(s)

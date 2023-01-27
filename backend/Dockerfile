@@ -7,7 +7,7 @@ COPY mysite /app
 WORKDIR /app
 
 COPY ./requirements.txt /app/
-RUN pip3 install -r requirements.txt
+RUN apk add build-base postgresql-dev libpq && pip3 install -r requirements.txt
 
 COPY ./entrypoint.sh /
 ENTRYPOINT ["sh", "/entrypoint.sh"]
