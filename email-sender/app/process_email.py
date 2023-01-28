@@ -1,25 +1,19 @@
 from celery import Celery
 import os
-import smtplib, ssl
-import time
+import smtplib
 
-# user = "user"
-# password = "password"
-
-# CELERY_BROKER_URL=f"amqp://{user}:{password}@localhost:5672/"
-
-user = 'user'
-password = 'password'
+user = os.environ["RABBITMQ_USER"]
+password = os.environ["RABBITMQ_PASS"]
 
 CELERY_BROKER_URL = f"amqp://{user}:{password}@rabbitmq:5672/"
 
 app = Celery('email', broker=CELERY_BROKER_URL)
 
+sender_email = os.environ["GMAIL_SENDER_EMAIL"]
+password = os.environ["GMAIL_SENDER_PASSWORD"]
+
 port = 465  # For SSL
 smtp_server = "smtp.gmail.com"
-sender_email = "aplikacjakryptowalutytest@gmail.com"
-password = "llfjfuahshnqjmvo"
-
 
 def setup_smpt():
     s = smtplib.SMTP('smtp.gmail.com', 587)
@@ -42,9 +36,9 @@ def process_email(email, crypto, price, currency):
     def send_email():
         # s = get_server()
         message = f"""\
-    Subject: Hi there
+    Subject: Najnowszy kurs Twojej kryptowaluty {crypto}
 
-    Hello {email}. Price for {crypto} is {price} {currency}"""
+    Cześć {email}. Obecna cena {crypto} wynosi {price} {currency}"""
         s.sendmail(sender_email, email, message)
 
     send_email()

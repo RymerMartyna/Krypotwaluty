@@ -4,6 +4,13 @@ services:
     build:
       context: backend
       dockerfile: Dockerfile
+    environment:
+      DJANGO_USER_NAME: ${DJANGO_USER_NAME}
+      DJANGO_USER_PASSWORD: ${DJANGO_USER_PASSWORD}
+      DJANGO_USER_EMAIL: ${DJANGO_USER_EMAIL}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DATABASE: ${DB_DATABASE}
     depends_on:
       - postgres
     ports:
@@ -31,6 +38,8 @@ services:
     environment:
       RABBITMQ_USER: ${RABBIT_MQ_USER}
       RABBITMQ_PASS: ${RABBIT_MQ_PASS}
+      GMAIL_SENDER_EMAIL: ${GMAIL_SENDER_EMAIL}
+      GMAIL_SENDER_PASSWORD: ${GMAIL_SENDER_PASSWORD}
 
   crypto-service:
     container_name: crypto-service
@@ -52,6 +61,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE}
+      TZ: Europe/Berlin
     ports:
       - '5432:5432'
     volumes:
@@ -62,7 +72,7 @@ services:
     image: dpage/pgadmin4
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"

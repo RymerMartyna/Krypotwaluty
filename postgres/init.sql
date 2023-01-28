@@ -24,4 +24,3 @@ CREATE TABLE predictions (
     date_of_prediction TIMESTAMP NOT NULL,
     prediction NUMERIC (12,6) NOT NULL
 );
-

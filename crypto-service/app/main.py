@@ -34,6 +34,12 @@ days = 2
 
 def initial_load():
     print("Executing initial load")
+    cur = conn.cursor()
+    sql = f"TRUNCATE table price_history"
+    print(f"executing {sql}")
+    cur.execute(sql)
+    print("executed")
+    conn.commit()
     for coin in coins_list:
         history = cg.get_coin_market_chart_by_id(coin, vs_currency=currency, days=2)["prices"]
 
@@ -49,6 +55,7 @@ def initial_load():
             print("executed")
             conn.commit()
 
+        process_crypto()
         make_prediction(conn, coin)
 
 @app.on_after_configure.connect
@@ -178,7 +185,7 @@ def make_prediction(connection, coin):
     # Creating forecast
     pr = Prophet()
     pr.fit(df)
-    future = pr.make_future_dataframe(periods=90)
+    future = pr.make_future_dataframe(periods=7)
     forecast = pr.predict(future)
 
     forecast = forecast[["ds", "yhat"]]

@@ -58,7 +58,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:8003',
+    'http://localhost:8000',
 ]
 
 ROOT_URLCONF = 'mysite.urls'
@@ -92,9 +92,9 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'default',
-        'USER': 'admin',
-        'PASSWORD': 'password',
+        'NAME': os.environ["POSTGRES_DATABASE"],
+        'USER': os.environ["POSTGRES_USER"],
+        'PASSWORD': os.environ["POSTGRES_PASSWORD"],
         'HOST': 'postgres',
         'PORT': '5432',
     }

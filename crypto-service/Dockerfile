@@ -11,8 +11,6 @@ COPY ./requirements.txt /app/
 
 
 RUN pip install -r requirements.txt
-RUN pip install pandas
-RUN pip install pymeeus ujson korean-lunar-calendar hijri-converter ephem convertdate setuptools-git pystan==2.19.1.1 LunarCalendar holidays cmdstanpy
 RUN pip install prophet
 
 COPY ./entrypoint.sh /
